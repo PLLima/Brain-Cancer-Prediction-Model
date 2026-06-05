@@ -7,7 +7,7 @@
 #   - eda_cgh_profile.png        : profil moyen CGH par classe
 #   - eda_ge_top_var.png         : top-30 GE par variance, heatmap
 #   - eda_pca_blocks.png         : PCA non-supervisée GE / CGH
-#   - eda_corr_intrabloc.png     : matrice corrélation échantillon
+#   - eda_pca_scree.png          : scree + variance cumulée PCA par bloc
 #   - eda_ge_top_discriminants.png : top-20 GE par |t-stat| vs midl
 # =====================================================================
 
@@ -19,8 +19,20 @@ set.seed(42)
 LABEL_ORDER <- c("cort", "dipg", "midl")
 COL_CLASSES <- c("cort"="#3498DB", "dipg"="#F39C12", "midl"="#C0392B")
 
-# ---- Localiser data ----
-setwd("/Users/ruben/Documents/Brain-Cancer-Prediction-Model/models")
+# ---- Localiser data (dossier du script, portable Windows/macOS/Linux) ----
+get_script_dir <- function() {
+  # 1) Rscript / Code Runner : argument --file=
+  args <- commandArgs(trailingOnly = FALSE)
+  f <- sub("^--file=", "", args[grep("^--file=", args)])
+  if (length(f)) return(dirname(normalizePath(f[1])))
+  # 2) source() interactif
+  if (!is.null(sys.function(1)) && !is.null(ofn <- sys.frame(1)$ofile))
+    return(dirname(normalizePath(ofn)))
+  # 3) repli : répertoire courant
+  getwd()
+}
+script_dir <- tryCatch(get_script_dir(), error = function(e) getwd())
+setwd(script_dir)
 data_dir <- "../data"
 OUT_DIR  <- "../synthesis/figures"
 dir.create(OUT_DIR, showWarnings = FALSE, recursive = TRUE)
@@ -253,23 +265,53 @@ ggsave(file.path(OUT_DIR, "eda_ge_top_discriminants.png"), p6,
 cat("✓ eda_ge_top_discriminants.png\n")
 
 # =====================================================================
-# 7. Matrice de corrélation intra-bloc (échantillon 200 features)
+# 7. Structure de corrélation via PCA — scree + variance cumulée
 # =====================================================================
-set.seed(42)
-samp_ge  <- sample(ncol(GE_tr), 200)
-samp_cgh <- sample(ncol(CGH_tr), 200)
-C_ge  <- cor(GE_tr[, samp_ge])
-C_cgh <- cor(CGH_tr[, samp_cgh])
+# Une matrice de corrélation brute sur des features tirés au hasard est
+# illisible (15 702 / 1 229 variables) et peu interprétable. La PCA résume
+# cette structure de corrélation : la vitesse à laquelle la variance se
+# concentre dans les premières composantes mesure la redondance
+# (collinéarité) du bloc et sa dimensionnalité effective.
+scree_df <- function(X, blk) {
+  X_std <- scale(X)
+  X_std[is.na(X_std)] <- 0
+  pc <- prcomp(X_std, center = FALSE, scale. = FALSE)
+  ve <- pc$sdev^2 / sum(pc$sdev^2)
+  k  <- length(ve)
+  data.frame(bloc = blk, PC = seq_len(k),
+             var_expl = ve * 100, var_cum = cumsum(ve) * 100)
+}
+df_scree <- rbind(scree_df(GE_tr, "GE"), scree_df(CGH_tr, "CGH"))
+df_scree$bloc <- factor(df_scree$bloc, levels = c("GE", "CGH"))
 
-png(file.path(OUT_DIR, "eda_corr_intrabloc.png"),
-    width = 1200, height = 600, res = 130)
-par(mfrow = c(1, 2), mar = c(2, 2, 3, 2))
-image(C_ge, axes = FALSE, col = colorRampPalette(c("#2C3E50","white","#C0392B"))(100),
-      zlim = c(-1, 1), main = "GE — corrélations (200 features tirés)")
-image(C_cgh, axes = FALSE, col = colorRampPalette(c("#2C3E50","white","#C0392B"))(100),
-      zlim = c(-1, 1), main = "CGH — corrélations (200 features tirés)")
-dev.off()
-cat("✓ eda_corr_intrabloc.png\n")
+# Nombre de PC pour atteindre 80 % / 90 % de variance par bloc
+thr <- do.call(rbind, lapply(levels(df_scree$bloc), function(b) {
+  d <- df_scree[df_scree$bloc == b, ]
+  data.frame(bloc = b,
+             k80 = which(d$var_cum >= 80)[1],
+             k90 = which(d$var_cum >= 90)[1])
+}))
+lab_thr <- with(thr, sprintf("%s : %d PC → 80 %% | %d PC → 90 %%",
+                             bloc, k80, k90))
+
+p7 <- ggplot(df_scree, aes(x = PC)) +
+  geom_col(aes(y = var_expl), fill = "#3498DB", color = "black",
+           linewidth = 0.15, alpha = 0.85) +
+  geom_line(aes(y = var_cum), color = "#C0392B", linewidth = 0.6) +
+  geom_point(aes(y = var_cum), color = "#C0392B", size = 0.9) +
+  geom_hline(yintercept = c(80, 90), linetype = "dashed",
+             color = "grey40", alpha = 0.6) +
+  facet_wrap(~ bloc, scales = "free_x") +
+  labs(title = "Structure de corrélation par bloc — PCA (scree plot)",
+       subtitle = paste(lab_thr, collapse = "   •   "),
+       x = "Composante principale",
+       y = "Variance expliquée (%)  —  barres ; cumulée (%) — courbe") +
+  theme_minimal(base_size = 10) +
+  theme(plot.title = element_text(face = "bold"),
+        strip.text = element_text(face = "bold"))
+ggsave(file.path(OUT_DIR, "eda_pca_scree.png"), p7,
+       width = 10, height = 4.5, dpi = 150, bg = "white")
+cat("✓ eda_pca_scree.png\n")
 
 # =====================================================================
 # 8. Sauvegarde résumé
