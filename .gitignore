@@ -208,3 +208,15 @@ __marimo__/
 
 exports/
 results_summary.md
+
+# OS / editor cruft
+.DS_Store
+.Rapp.history
+.Rhistory
+.RData
+
+# Heavy regenerable SGCCA fit objects (produced by analysis/multiblock/02_sgcca.R)
+results/sgcca_fit_final.rds
+results/sgcca_bootstrap.rds
+results/sgcca_stable.rds
+results/sgcca_cv.rds

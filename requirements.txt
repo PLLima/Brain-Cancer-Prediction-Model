@@ -1,0 +1,17 @@
+# Python dependencies for the analysis notebooks and the report build scripts.
+# Tested with Python 3.13 (see .venv). Install with:
+#     python -m pip install -r requirements.txt
+numpy==2.4.3
+pandas==3.0.1
+scipy==1.17.1
+scikit-learn==1.8.0
+matplotlib==3.10.8
+joblib==1.5.3
+
+# Report PDF generation (report/build_pdf.py)
+fpdf2>=2.7
+
+# Notebook execution (run_pipeline.sh / jupyter nbconvert --execute)
+ipykernel==7.2.0
+jupyter>=1.0
+nbconvert>=7.0
