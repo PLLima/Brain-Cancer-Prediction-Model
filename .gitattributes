@@ -1,0 +1,5 @@
+# Keep shell and R scripts LF-terminated so they run on every platform
+# (a CRLF in run_pipeline.sh would break the bash shebang).
+*.sh   text eol=lf
+*.R    text eol=lf
+*.py   text eol=lf
