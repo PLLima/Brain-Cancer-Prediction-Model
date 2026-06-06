@@ -37,8 +37,9 @@ Full results and figures: [`report/RESULTS.md`](report/RESULTS.md).
 │   ├── 00_eda.R          # exploratory data analysis
 │   ├── baselines/        # single-block & naive-fusion baselines (logreg, SVM, RF)
 │   ├── multiblock/       # SGCCA, cooperative learning, multinomial lasso
+│   ├── refinements/      # class-weighting (inverse-prevalence) for class imbalance
 │   └── stability/        # bootstrap stability selection of stable genes
-├── experiments/          # archived exploratory dead-ends (sparse PCA, fused lasso, SMOTE, …)
+├── experiments/          # archived exploratory dead-ends (sparse PCA, fused/group lasso, SMOTE)
 ├── results/              # model outputs (.rds) produced by the analysis code
 ├── figures/              # generated figures (.png / .pdf)
 ├── report/               # write-up (RESULTS.md, METHODOLOGY.md) + figure/PDF build scripts

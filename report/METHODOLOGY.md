@@ -30,8 +30,10 @@ files as follows:
 | NB11 (cooperative OvR) | [`../analysis/multiblock/05_cooperative_ovr.ipynb`](../analysis/multiblock/05_cooperative_ovr.ipynb) |
 | NB14 (multinomial lasso) | [`../analysis/multiblock/06_multinomial_lasso.ipynb`](../analysis/multiblock/06_multinomial_lasso.ipynb) |
 | NB14c (multinomial ungrouped) | [`../analysis/multiblock/07_multinomial_lasso_ungrouped.R`](../analysis/multiblock/07_multinomial_lasso_ungrouped.R) |
+| NB15 (cooperative multinomial, FISTA) | [`../analysis/multiblock/08_cooperative_multinomial_fista.ipynb`](../analysis/multiblock/08_cooperative_multinomial_fista.ipynb) |
+| NB17 / NB21 (class-weighting refinements) | [`../analysis/refinements/`](../analysis/refinements/) |
 | NB18 / NB24 (stability selection) | [`../analysis/stability/`](../analysis/stability/) |
-| NB12, NB13, NB15, NB17, NB19–NB23 (exploratory dead-ends) | [`../experiments/`](../experiments/) |
+| NB12, NB13, NB19, NB20, NB22, NB23 (exploratory dead-ends: sparse PCA, group/fused lasso, SMOTE) | [`../experiments/`](../experiments/) |
 
 ---
 
